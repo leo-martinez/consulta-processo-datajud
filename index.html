@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Consulta Processual · DataJud CNJ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f5f5f4;
+      --surface: #ffffff;
+      --border: rgba(0,0,0,0.1);
+      --border-strong: rgba(0,0,0,0.18);
+      --text: #1c1c1a;
+      --text-muted: #6b6b68;
+      --text-hint: #9a9a96;
+      --accent: #3b5bdb;
+      --accent-bg: #eef1ff;
+      --accent-text: #2f4ac7;
+      --success-bg: #ebfbee;
+      --success-text: #2b8a3e;
+      --warning-bg: #fff9db;
+      --warning-text: #876800;
+      --danger-bg: #fff5f5;
+      --danger-text: #c92a2a;
+      --radius: 10px;
+      --radius-lg: 14px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1a1a18;
+        --surface: #242422;
+        --border: rgba(255,255,255,0.1);
+        --border-strong: rgba(255,255,255,0.18);
+        --text: #f0efeb;
+        --text-muted: #a0a09c;
+        --text-hint: #6b6b68;
+        --accent: #748ffc;
+        --accent-bg: #1e2448;
+        --accent-text: #91a7ff;
+        --success-bg: #0f2e17;
+        --success-text: #69db7c;
+        --warning-bg: #2e2200;
+        --warning-text: #ffd43b;
+        --danger-bg: #2e0f0f;
+        --danger-text: #ff8787;
+      }
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 2rem;
+    }
+
+    .header-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--accent-bg);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      color: var(--accent-text);
+    }
+
+    .header h1 {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .header p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .search-grid {
+      display: grid;
+      grid-template-columns: 1fr 140px;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    @media (max-width: 500px) {
+      .search-grid { grid-template-columns: 1fr; }
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 9px 12px;
+      border: 0.5px solid var(--border-strong);
+      border-radius: var(--radius);
+      background: var(--bg);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(59,91,219,0.12);
+    }
+
+    input[type="text"] { font-family: 'JetBrains Mono', monospace; }
+
+    button.primary {
+      width: 100%;
+      padding: 10px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    button.primary:hover { opacity: 0.88; }
+    button.primary:active { transform: scale(0.98); }
+    button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .status {
+      display: none;
+      margin-top: 1rem;
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      font-size: 13px;
+    }
+    .status.loading { background: var(--bg); color: var(--text-muted); border: 0.5px solid var(--border); }
+    .status.error   { background: var(--danger-bg); color: var(--danger-text); border: 0.5px solid var(--danger-text); }
+
+    .result { display: none; margin-top: 1.5rem; }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 1rem;
+    }
+
+    @media (max-width: 500px) { .meta-grid { grid-template-columns: 1fr; } }
+
+    .meta-item {
+      background: var(--bg);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+    }
+
+    .meta-item .meta-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-bottom: 3px;
+    }
+
+    .meta-item .meta-value {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 9px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .badge-blue    { background: var(--accent-bg); color: var(--accent-text); }
+    .badge-green   { background: var(--success-bg); color: var(--success-text); }
+    .badge-amber   { background: var(--warning-bg); color: var(--warning-text); }
+    .badge-gray    { background: var(--bg); color: var(--text-muted); border: 0.5px solid var(--border-strong); }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title .count {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .parte-row {
+      padding: 10px 0;
+      border-bottom: 0.5px solid var(--border);
+    }
+
+    .parte-row:last-child { border-bottom: none; }
+
+    .parte-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 3px;
+    }
+
+    .parte-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .parte-tipo {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .adv-row {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      padding-left: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .mov-row {
+      display: grid;
+      grid-template-columns: 130px 1fr;
+      gap: 8px;
+      padding: 8px 0;
+      border-bottom: 0.5px solid var(--border);
+      align-items: start;
+    }
+
+    .mov-row:last-child { border-bottom: none; }
+    .mov-row.latest { background: var(--accent-bg); border-radius: var(--radius); padding: 8px 10px; margin-bottom: 4px; }
+
+    .mov-data {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      padding-top: 1px;
+    }
+
+    .mov-nome { font-size: 13px; color: var(--text); }
+    .mov-comp { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    .numero-processo {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .process-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 0.5px solid var(--border);
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 2rem;
+      font-size: 12px;
+      color: var(--text-hint);
+    }
+
+    footer a { color: var(--text-muted); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinning { display: inline-block; animation: spin 1s linear infinite; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="header-icon"><i class="ti ti-scale" aria-hidden="true"></i></div>
+    <div>
+      <h1>Consulta processual</h1>
+      <p>API pública DataJud · CNJ</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="search-grid">
+      <div>
+        <label for="numProcesso">Número do processo (CNJ)</label>
+        <input type="text" id="numProcesso" placeholder="0000000-00.0000.0.00.0000" />
+      </div>
+      <div>
+        <label for="tribunal">Tribunal</label>
+        <select id="tribunal">
+          <option value="tjrj">TJRJ</option>
+          <option value="tjsp">TJSP</option>
+          <option value="tjmg">TJMG</option>
+          <option value="tjrs">TJRS</option>
+          <option value="tjpr">TJPR</option>
+          <option value="tjba">TJBA</option>
+          <option value="tjsc">TJSC</option>
+          <option value="tjpe">TJPE</option>
+          <option value="tjgo">TJGO</option>
+          <option value="tjam">TJAM</option>
+          <option value="trf1">TRF1</option>
+          <option value="trf2">TRF2</option>
+          <option value="trf3">TRF3</option>
+          <option value="trf4">TRF4</option>
+          <option value="trf5">TRF5</option>
+          <option value="tst">TST</option>
+          <option value="stj">STJ</option>
+        </select>
+      </div>
+    </div>
+    <button class="primary" id="btnConsultar" onclick="consultar()">
+      <i class="ti ti-search" aria-hidden="true"></i> Consultar processo
+    </button>
+    <div class="status" id="status"></div>
+  </div>
+
+  <div class="result" id="resultado"></div>
+
+  <footer>
+    Dados fornecidos pela <a href="https://datajud-wiki.cnj.jus.br/api-publica/" target="_blank">API pública do DataJud · CNJ</a>
+  </footer>
+</div>
+
+<script>
+const API_KEY = "cDZHYzlZa0JadVREZDJCendQbXY6SkJlTzNjLV9TRENyQk1RdnFKZGRQdw==";
+
+function setStatus(msg, type) {
+  const el = document.getElementById('status');
+  el.className = 'status ' + (type || '');
+  el.style.display = msg ? 'block' : 'none';
+  el.textContent = msg;
+}
+
+function fmtData(s) {
+  if (!s) return '—';
+  try {
+    const d = new Date(s);
+    return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+  } catch(e) { return s; }
+}
+
+function badge(txt, cls) {
+  return `<span class="badge badge-${cls}">${txt}</span>`;
+}
+
+function renderProcesso(src) {
+  const partes = src.partes || [];
+  const movs = (src.movimentos || []).sort((a,b) => new Date(b.dataHora) - new Date(a.dataHora));
+  const assuntos = (src.assuntos || []).map(a => a.nome).filter(Boolean).join(' · ') || '—';
+
+  const partesHTML = partes.length ? partes.map(p => {
+    const polo = (p.polo || '?').toLowerCase();
+    const corPolo = polo === 'ativo' ? 'blue' : polo === 'passivo' ? 'amber' : 'gray';
+    const advs = (p.advogados || []).map(a =>
+      `<div class="adv-row"><i class="ti ti-briefcase" style="font-size:12px;" aria-hidden="true"></i> ${a.nome || '—'} · OAB ${a.numeroOAB || '?'}</div>`
+    ).join('');
+    return `<div class="parte-row">
+      <div class="parte-header">
+        ${badge(polo.toUpperCase(), corPolo)}
+        <span class="parte-name">${p.nome || '—'}</span>
+        <span class="parte-tipo">${(p.tipo||{}).nome||''}</span>
+      </div>
+      ${advs}
+    </div>`;
+  }).join('') : '<p style="font-size:13px; color:var(--text-muted); padding:8px 0;">Sem partes disponíveis.</p>';
+
+  const movsHTML = movs.length ? movs.slice(0, 50).map((m, i) => {
+    const comps = (m.complementosTabelados || []).map(c => c.descricao).filter(Boolean).join(' · ');
+    return `<div class="mov-row ${i===0?'latest':''}">
+      <span class="mov-data">${fmtData(m.dataHora)}</span>
+      <div>
+        <div class="mov-nome">${m.nome || '—'}</div>
+        ${comps ? `<div class="mov-comp">${comps}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('') + (movs.length > 50 ? `<p style="font-size:12px;color:var(--text-muted);margin-top:8px;">...e mais ${movs.length - 50} movimentações.</p>` : '')
+  : '<p style="font-size:13px; color:var(--text-muted);">Sem movimentações.</p>';
+
+  return `
+  <div class="card">
+    <div class="process-header">
+      <i class="ti ti-file-description" style="font-size:18px; color:var(--text-muted);" aria-hidden="true"></i>
+      <span class="numero-processo">${src.numeroProcesso || '—'}</span>
+      ${badge(src.grau || '—', 'gray')}
+      ${badge((src.formato||{}).nome || '—', 'blue')}
+    </div>
+    <div class="meta-grid">
+      <div class="meta-item"><div class="meta-label">Classe</div><div class="meta-value">${(src.classe||{}).nome||'—'}</div></div>
+      <div class="meta-item"><div class="meta-label">Tribunal</div><div class="meta-value">${src.tribunal||'—'}</div></div>
+      <div class="meta-item"><div class="meta-label">Órgão julgador</div><div class="meta-value">${(src.orgaoJulgador||{}).nome||'—'}</div></div>
+      <div class="meta-item"><div class="meta-label">Data de ajuizamento</div><div class="meta-value">${fmtData(src.dataAjuizamento)}</div></div>
+    </div>
+    <div class="meta-item" style="margin-bottom:0;">
+      <div class="meta-label">Assunto(s)</div>
+      <div class="meta-value" style="font-weight:400;">${assuntos}</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">
+      <i class="ti ti-users" style="font-size:16px;" aria-hidden="true"></i> Partes
+    </div>
+    ${partesHTML}
+  </div>
+
+  <div class="card">
+    <div class="section-title">
+      <i class="ti ti-clock" style="font-size:16px;" aria-hidden="true"></i>
+      Movimentações <span class="count">(${movs.length} total)</span>
+    </div>
+    ${movsHTML}
+  </div>`;
+}
+
+async function consultar() {
+  const num = document.getElementById('numProcesso').value.trim();
+  const tribunal = document.getElementById('tribunal').value;
+  const btn = document.getElementById('btnConsultar');
+  const resultDiv = document.getElementById('resultado');
+
+  if (!num) { setStatus('Informe o número do processo.', 'error'); return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader spinning" aria-hidden="true"></i> Consultando...';
+  resultDiv.style.display = 'none';
+  setStatus('Buscando na API do DataJud...', 'loading');
+
+  try {
+    const res = await fetch(`https://api-publica.datajud.cnj.jus.br/api_publica_${tribunal}/_search`, {
+      method: 'POST',
+      headers: { 'Authorization': `APIKey ${API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: { match: { numeroProcesso: num } } })
+    });
+
+    if (!res.ok) throw new Error(`Erro ${res.status}: ${res.statusText}`);
+
+    const data = await res.json();
+    const hits = (data.hits || {}).hits || [];
+
+    if (!hits.length) {
+      setStatus('Processo não encontrado. Verifique o número ou se está sob segredo de justiça.', 'error');
+    } else {
+      setStatus('', '');
+      resultDiv.style.display = 'block';
+      resultDiv.innerHTML = hits.map(h => renderProcesso(h._source || {})).join('');
+    }
+  } catch(e) {
+    setStatus('Erro ao consultar: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-search" aria-hidden="true"></i> Consultar processo';
+  }
+}
+
+document.getElementById('numProcesso').addEventListener('keydown', e => {
+  if (e.key === 'Enter') consultar();
+});
+</script>
+</body>
+</html>
