@@ -19,10 +19,25 @@ export default async function handler(req, res) {
       sort = undefined;
       break;
     case "parte":
-      query = { match: { "partes.nome": valor } };
+      // tenta match simples no campo raiz
+      query = {
+        bool: {
+          should: [
+            { match: { "partes.nome": valor } },
+            { match_phrase_prefix: { "partes.nome": valor } }
+          ]
+        }
+      };
       break;
     case "advogado":
-      query = { match: { "partes.advogados.nome": valor } };
+      query = {
+        bool: {
+          should: [
+            { match: { "partes.advogados.nome": valor } },
+            { match_phrase_prefix: { "partes.advogados.nome": valor } }
+          ]
+        }
+      };
       break;
     case "oab":
       query = valorExtra
@@ -33,7 +48,14 @@ export default async function handler(req, res) {
         : { match: { "partes.advogados.numeroOAB": valor } };
       break;
     case "orgao":
-      query = { match: { "orgaoJulgador.nome": valor } };
+      query = {
+        bool: {
+          should: [
+            { match: { "orgaoJulgador.nome": valor } },
+            { match_phrase_prefix: { "orgaoJulgador.nome": valor } }
+          ]
+        }
+      };
       break;
     case "periodo":
       const range = {};
@@ -47,6 +69,9 @@ export default async function handler(req, res) {
 
   const body = { query, size: size || 10, from: from || 0 };
   if (sort) body.sort = sort;
+
+  // loga o body enviado pra debug
+  console.log("QUERY ENVIADA:", JSON.stringify(body));
 
   try {
     const apiRes = await fetch(
@@ -62,11 +87,15 @@ export default async function handler(req, res) {
     );
 
     const text = await apiRes.text();
+    console.log("RESPOSTA STATUS:", apiRes.status);
+    console.log("RESPOSTA:", text.substring(0, 500));
+
     if (!apiRes.ok) {
       return res.status(apiRes.status).json({ error: text });
     }
     return res.status(200).json(JSON.parse(text));
   } catch(e) {
+    console.error("ERRO:", e.message);
     return res.status(500).json({ error: e.message });
   }
 }
