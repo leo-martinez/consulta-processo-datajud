@@ -482,7 +482,7 @@ async function consultar() {
   setStatus('Buscando na API do DataJud...', 'loading');
 
   try {
-    const res = await fetch('https://datajud-proxy.leonardobarreiromartinez.workers.dev', {
+    const res = await fetch('https://consulta-processo-datajud.vercel.app/api/proxy', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ tribunal, query: { match: { numeroProcesso: num } } })
