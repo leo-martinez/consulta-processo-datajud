@@ -284,44 +284,38 @@ function badge(txt, cls) {
 
 function buildQuery() {
   switch(currentTab) {
-    case 'numero':
+    case 'numero': {
       const num = document.getElementById('input-numero').value.trim();
       if (!num) return null;
-      return { query: { match: { numeroProcesso: num } }, tribunal: document.getElementById('tribunal-numero').value };
-
-    case 'parte':
+      return { tipo: 'numero', valor: num, tribunal: document.getElementById('tribunal-numero').value };
+    }
+    case 'parte': {
       const parte = document.getElementById('input-parte').value.trim();
       if (!parte) return null;
-      return { query: { match: { "partes.nome": parte } }, tribunal: document.getElementById('tribunal-parte').value, sort: [{ dataAjuizamento: { order: 'desc' } }] };
-
-    case 'advogado':
+      return { tipo: 'parte', valor: parte, tribunal: document.getElementById('tribunal-parte').value };
+    }
+    case 'advogado': {
       const adv = document.getElementById('input-advogado').value.trim();
       if (!adv) return null;
-      return { query: { match: { "partes.advogados.nome": adv } }, tribunal: document.getElementById('tribunal-advogado').value, sort: [{ dataAjuizamento: { order: 'desc' } }] };
-
-    case 'oab':
+      return { tipo: 'advogado', valor: adv, tribunal: document.getElementById('tribunal-advogado').value };
+    }
+    case 'oab': {
       const oabNum = document.getElementById('input-oab-num').value.trim();
       const oabUf = document.getElementById('input-oab-uf').value.trim();
       if (!oabNum) return null;
-      const oabQuery = oabUf
-        ? { bool: { must: [{ match: { "partes.advogados.numeroOAB": oabNum } }, { match: { "partes.advogados.ufOAB": oabUf } }] } }
-        : { match: { "partes.advogados.numeroOAB": oabNum } };
-      return { query: oabQuery, tribunal: document.getElementById('tribunal-oab').value, sort: [{ dataAjuizamento: { order: 'desc' } }] };
-
-    case 'orgao':
+      return { tipo: 'oab', valor: oabNum, valorExtra: oabUf || null, tribunal: document.getElementById('tribunal-oab').value };
+    }
+    case 'orgao': {
       const orgao = document.getElementById('input-orgao').value.trim();
       if (!orgao) return null;
-      return { query: { match: { "orgaoJulgador.nome": orgao } }, tribunal: document.getElementById('tribunal-orgao').value, sort: [{ dataAjuizamento: { order: 'desc' } }] };
-
-    case 'periodo':
+      return { tipo: 'orgao', valor: orgao, tribunal: document.getElementById('tribunal-orgao').value };
+    }
+    case 'periodo': {
       const ini = document.getElementById('input-data-ini').value;
       const fim = document.getElementById('input-data-fim').value;
       if (!ini && !fim) return null;
-      const range = {};
-      if (ini) range.gte = ini;
-      if (fim) range.lte = fim + 'T23:59:59';
-      return { query: { range: { dataAjuizamento: range } }, tribunal: document.getElementById('tribunal-periodo').value, sort: [{ dataAjuizamento: { order: 'desc' } }] };
-
+      return { tipo: 'periodo', dataIni: ini || null, dataFim: fim || null, tribunal: document.getElementById('tribunal-periodo').value };
+    }
     default: return null;
   }
 }
