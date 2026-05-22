@@ -482,10 +482,10 @@ async function consultar() {
   setStatus('Buscando na API do DataJud...', 'loading');
 
   try {
-    const res = await fetch(`https://api-publica.datajud.cnj.jus.br/api_publica_${tribunal}/_search`, {
+    const res = await fetch('https://datajud-proxy.leonardobarreiromartinez.workers.dev', {
       method: 'POST',
-      headers: { 'Authorization': `APIKey ${API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query: { match: { numeroProcesso: num } } })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tribunal, query: { match: { numeroProcesso: num } } })
     });
 
     if (!res.ok) throw new Error(`Erro ${res.status}: ${res.statusText}`);
