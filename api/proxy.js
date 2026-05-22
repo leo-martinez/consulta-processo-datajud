@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).end();
 
-  const { tribunal, query } = req.body;
+  const { tribunal, query, size, sort, from } = req.body;
 
   const apiRes = await fetch(
     `https://api-publica.datajud.cnj.jus.br/api_publica_${tribunal}/_search`,
@@ -18,7 +18,7 @@ export default async function handler(req, res) {
         Authorization: `APIKey ${API_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ query }),
+      body: JSON.stringify({ query, size: size || 10, sort, from: from || 0 }),
     }
   );
 
